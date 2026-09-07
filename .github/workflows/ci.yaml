@@ -1,31 +1,63 @@
-name : ci/cd pipeline to deploy artifact into tomcat
-on :
- push:
-   branches: master
+name: ci/cd pipeline to deploy artifact into tomcat
+
+on:
+  push:
+    branches: master
+
 jobs:
   build-deploy:
-   runs-on: ubuntu-latest
-   steps:
-     - name: checkout code
-       uses: actions/checkout@v5
-     - name: set-up jdk
-       uses: actions/setup-java@v5
-       with:
-          distribution : "temurin"
-          java-version : '17'
-     - name: validate with maven
-       run: mvn validate
-     - name: compile with maven
-       run: mvn compile
-     - name: test with maven
-       run: mvn test
-     - name: package with maven
-       run: mvn package
-     - name: verify the war file
-       run: ls -lh target/
+    runs-on: ubuntu-latest
 
-     - name: Deploy War to tomcat dev
-       run: |
-        curl -v -u "${{ secrets.TOMCAT_USER }}:${{ secrets.TOMCAT_PASSWORD }}" \
-        --upload-file target/TrainBook-1.0.0-SNAPSHOT.war \
-        "http://${{ secrets.TOMCAT_HOST_DEV }}:8080/manager/text/deploy?path=/TrainBook&update=true"
+    steps:
+
+      - name: checkout code
+        uses: actions/checkout@v5
+
+      - name: set-up jdk
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: '17'
+
+      - name: validate with maven
+        run: mvn validate
+
+      - name: compile with maven
+        run: mvn compile
+
+      - name: test with maven
+        run: mvn test
+
+      - name: package with maven
+        run: mvn package
+
+      - name: verify the war file
+        run: ls -lh target/
+
+      # DEV
+      - name: Deploy War to Tomcat DEV
+        run: |
+          curl -v -u "${{ secrets.TOMCAT_USER }}:${{ secrets.TOMCAT_PASSWORD }}" \
+            --upload-file target/TrainBook-1.0.0-SNAPSHOT.war \
+            "http://${{ secrets.TOMCAT_HOST_DEV }}:8080/manager/text/deploy?path=/TrainBook&update=true"
+
+      # TEST
+      - name: Deploy War to Tomcat TEST
+        run: |
+          curl -v -u "${{ secrets.TOMCAT_USER }}:${{ secrets.TOMCAT_PASSWORD }}" \
+            --upload-file target/TrainBook-1.0.0-SNAPSHOT.war \
+            "http://${{ secrets.TOMCAT_HOST_TEST }}:8080/manager/text/deploy?path=/TrainBook&update=true"
+
+      # PRE-PROD
+      - name: Deploy War to Tomcat PRE-PROD
+        run: |
+          curl -v -u "${{ secrets.TOMCAT_USER }}:${{ secrets.TOMCAT_PASSWORD }}" \
+            --upload-file target/TrainBook-1.0.0-SNAPSHOT.war \
+            "http://${{ secrets.TOMCAT_HOST_PRE_PROD }}:8080/manager/text/deploy?path=/TrainBook&update=true"
+
+      # PROD
+      - name: Deploy War to Tomcat PROD
+        run: |
+          curl -v -u "${{ secrets.TOMCAT_USER }}:${{ secrets.TOMCAT_PASSWORD }}" \
+            --upload-file target/TrainBook-1.0.0-SNAPSHOT.war \
+            "http://${{ secrets.TOMCAT_HOST_PROD }}:8080/manager/text/deploy?path=/TrainBook&update=true"
