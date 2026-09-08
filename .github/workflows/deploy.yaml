@@ -84,4 +84,4 @@ jobs:
         run: |
           mvn deploy \
             -DaltDeploymentRepository=nexus::default::${{ secrets.NEXUS_REPO_URL }}
-```
+
